@@ -10,6 +10,7 @@ angular.module('yaMap',[]).
 
     value('yaMapSettings',{
         lang:'ru-RU',
+        protocol:'',
         order:'longlat'
     }).
 
@@ -23,7 +24,7 @@ angular.module('yaMap',[]).
                 callback[0]();
             }
         };
-        var loadUrl = '//api-maps.yandex.ru/2.0/?load=package.full&lang=' +
+        var loadUrl =  (yaMapSettings.protocol || '') + '//api-maps.yandex.ru/2.0/?load=package.full&lang=' +
             (yaMapSettings.lang || 'ru-RU') +'&coordorder=' +(yaMapSettings.order || 'longlat');
         var _loading = false;
         var loadScript = function(url, callback){
@@ -31,22 +32,27 @@ angular.module('yaMap',[]).
                 return;
             }
             _loading=true;
-            var script = document.createElement("script");
-            script.type = "text/javascript";
-            if (script.readyState){ // IE
-                script.onreadystatechange = function(){
-                    if (script.readyState=="loaded" || script.readyState=="complete"){
-                        script.onreadystatechange = null;
+            // test if preloaded
+            if (window['ymaps']) {
+                callback();
+            } else {
+                var script = document.createElement("script");
+                script.type = "text/javascript";
+                if (script.readyState){ // IE
+                    script.onreadystatechange = function(){
+                        if (script.readyState=="loaded" || script.readyState=="complete"){
+                            script.onreadystatechange = null;
+                            callback();
+                        }
+                    };
+                } else { // Другие броузеры
+                    script.onload = function(){
                         callback();
-                    }
-                };
-            } else { // Другие броузеры
-                script.onload = function(){
-                    callback();
-                };
+                    };
+                }
+                script.src = url;
+                document.getElementsByTagName("head")[0].appendChild(script);
             }
-            script.src = url;
-            document.getElementsByTagName("head")[0].appendChild(script);
         };
 
         return function(callback){

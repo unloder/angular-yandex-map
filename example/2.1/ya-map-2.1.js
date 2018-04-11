@@ -12,6 +12,7 @@ angular.module('yaMap',[]).
         var options = {
             version:'2.1',
             lang:'ru_RU',
+            protocol:'',
             order:'longlat'
         };
         this.setLanguage=function(lang){
@@ -37,30 +38,35 @@ angular.module('yaMap',[]).
                 callback[0]();
             }
         };
-        var loadUrl = '//api-maps.yandex.ru/'+yaMapSettings.version+'/?load=package.full&lang=' +
-            yaMapSettings.lang +'&coordorder=' +yaMapSettings.order;
+        var loadUrl = (yaMapSettings.protocol || '') + '//api-maps.yandex.ru/' + yaMapSettings.version + '/?load=package.full&lang=' +
+            yaMapSettings.lang + '&coordorder=' + yaMapSettings.order;
         var _loading = false;
         var loadScript = function(url, callback){
             if(_loading){
                 return;
             }
             _loading=true;
-            var script = document.createElement("script");
-            script.type = "text/javascript";
-            if (script.readyState){ // IE
-                script.onreadystatechange = function(){
-                    if (script.readyState=="loaded" || script.readyState=="complete"){
-                        script.onreadystatechange = null;
+            // test if preloaded
+            if (window['ymaps']) {
+                callback();
+            } else {
+                var script = document.createElement("script");
+                script.type = "text/javascript";
+                if (script.readyState){ // IE
+                    script.onreadystatechange = function(){
+                        if (script.readyState=="loaded" || script.readyState=="complete"){
+                            script.onreadystatechange = null;
+                            callback();
+                        }
+                    };
+                } else { // Другие броузеры
+                    script.onload = function(){
                         callback();
-                    }
-                };
-            } else { // Другие броузеры
-                script.onload = function(){
-                    callback();
-                };
+                    };
+                }
+                script.src = url;
+                document.getElementsByTagName("head")[0].appendChild(script);
             }
-            script.src = url;
-            document.getElementsByTagName("head")[0].appendChild(script);
         };
 
         return function(callback){
