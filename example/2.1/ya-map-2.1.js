@@ -19,6 +19,10 @@ angular.module('yaMap',[]).
             options.lang=lang;
             return this;
         };
+        this.setProtocol=function(protocol){
+            options.protocol=protocol;
+            return this;
+        };
         this.setOrder=function(order){
             options.order = order;
             return this;
